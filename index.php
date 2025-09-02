@@ -128,6 +128,13 @@
                 border: 1px solid white;
                 margin-bottom: 25px;
             }
+			
+			@media only screen and (max-width: 720px) {
+                main {
+                    margin-top: 30px;
+                    width: 92%;
+                }
+            }
         </style>
     </head>
     <body>
