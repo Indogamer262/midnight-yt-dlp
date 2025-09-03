@@ -1,4 +1,10 @@
-<?php 
+<?php
+    session_start();
+    // initialize array if there's none
+    if(!isset($_SESSION["ytdl_viewed"])) {
+        $_SESSION["ytdl_viewed"] = [];
+    }
+
     $message = "";
 
     if(!empty($_POST["action"])) {
@@ -9,11 +15,17 @@
             $delfile = str_replace("/","_",$_POST["del-file"]);
             $deldir = "downloads/" . $delfile;
             if(!empty($delfile)) {
-                if(unlink($deldir)) {
-                    $message = "Succesfully delete $delfile!";
+                // only delete if user have viewed the file
+                if(in_array($delfile, $_SESSION["ytdl_viewed"])) {
+                    if(unlink($deldir)) {
+                        $message = "Succesfully delete $delfile!";
+                    }
+                    else {
+                        $message = "$delfile didn't exist!";
+                    }
                 }
                 else {
-                    $message = "$delfile didn't exist!";
+                    $message = "not permitted to delete \"$delfile\" because you haven't view that file";
                 }
             }
         }
@@ -128,8 +140,8 @@
                 border: 1px solid white;
                 margin-bottom: 25px;
             }
-			
-			@media only screen and (max-width: 720px) {
+            
+            @media only screen and (max-width: 720px) {
                 main {
                     margin-top: 30px;
                     width: 92%;
@@ -185,18 +197,28 @@
                     
                     // if url is defined, execute the command
                     if(!empty($url)) {
-                        //echo passthru("source /home/christi5/virtualenv/public_subdomains/midnight/ytdl/3.11/bin/activate && yt-dlp -t $type $url");
-                        //echo shell_exec("");
-                        //echo shell_exec("cd .. && ls -all");
-                        
-                        while (@ ob_end_flush());
-                        
-                        //$proc = popen("source 3.11/bin/activate && cd downloads && ffmpeg -version", 'r');
-                        $proc = popen("source 3.11/bin/activate && cd downloads && yt-dlp $type$quality$url", 'r');
-                        while (!feof($proc))
-                        {
-                            echo fread($proc, 4096);
-                            @ flush();
+                        // only execute the command if url is not the same from previous execution
+                        if($_SESSION["ytdl_lasturl"] != $url) {
+                            if(stripos($url,"clear") === false) {
+                                while (@ ob_end_flush());
+                                
+                                //$proc = popen("source /home/christi5/virtualenv/public_subdomains/midnight/ytdl/3.11/bin/activate && cd downloads && ffmpeg -version", 'r');
+                                $proc = popen("source /home/christi5/virtualenv/public_subdomains/midnight/ytdl/3.11/bin/activate && cd downloads && yt-dlp $type$quality$url", 'r');
+                                while (!feof($proc))
+                                {
+                                    echo fread($proc, 4096);
+                                    @ flush();
+                                }
+                                
+                                $_SESSION["ytdl_lasturl"] = $url;
+                            }
+                            else {
+                                $_SESSION["ytdl_lasturl"] = "";
+                                echo "prev command clear OK";
+                            }
+                        }
+                        else {
+                            echo "this command already executed, try another command before executing that command again! type \"clear\" to clear";
                         }
                     }
                     else {
@@ -210,12 +232,16 @@
                 <?php
                     foreach(array_diff(scandir("downloads"), array('.', '..', 'ffmpeg', 'ffprobe')) as $readname) {
                         echo '<div class="file-list montserrat-regular">';
-                        echo "<a class=\"file-name\" href=\"downloads/$readname\" target=\"_blank\">$readname</a>";
-                        echo "<form action=\"\" method=\"POST\"><input type=\"hidden\" name=\"del-file\" value=\"$readname\"><input type=\"submit\" class=\"button-danger\" name=\"action\" value=\"delete\"></form>";
+                        echo "<a class=\"file-name\" href=\"view.php?file=$readname\">$readname</a>";
+                        // only show option to delete if user have viewed the file
+                        if(in_array($readname, $_SESSION["ytdl_viewed"])) {
+                            echo "<form action=\"\" method=\"POST\"><input type=\"hidden\" name=\"del-file\" value=\"$readname\"><input type=\"submit\" class=\"button-danger\" name=\"action\" value=\"delete\"></form>";
+                        }
                         echo "</div>";
                     }
                 ?>
             </div>
+            <p class="montserrat-regular">To delete file, view the file first!</p>
         </main>
         
         <footer>
