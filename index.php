@@ -203,7 +203,7 @@
                                 while (@ ob_end_flush());
                                 
                                 //$proc = popen("source /home/christi5/virtualenv/public_subdomains/midnight/ytdl/3.11/bin/activate && cd downloads && ffmpeg -version", 'r');
-                                $proc = popen("source /home/christi5/virtualenv/public_subdomains/midnight/ytdl/3.11/bin/activate && cd downloads && yt-dlp $type$quality$url", 'r');
+                                $proc = popen("source /home/christi5/virtualenv/public_subdomains/midnight/ytdl/3.11/bin/activate && cd downloads && yt-dlp $type$quality$url --replace-in-metadata title \"#\" \"_\"", 'r');
                                 while (!feof($proc))
                                 {
                                     echo fread($proc, 4096);
@@ -214,7 +214,8 @@
                             }
                             else {
                                 $_SESSION["ytdl_lasturl"] = "";
-                                echo "prev command clear OK";
+                                $_SESSION["ytdl_viewed"] = [];
+                                echo "User session clear OK";
                             }
                         }
                         else {
@@ -232,7 +233,7 @@
                 <?php
                     foreach(array_diff(scandir("downloads"), array('.', '..', 'ffmpeg', 'ffprobe')) as $readname) {
                         echo '<div class="file-list montserrat-regular">';
-                        echo "<a class=\"file-name\" href=\"view.php?file=$readname\">$readname</a>";
+                        echo "<a class=\"file-name\" href=\"view.php?file=" . rawurlencode($readname) . "\">$readname</a>";
                         // only show option to delete if user have viewed the file
                         if(in_array($readname, $_SESSION["ytdl_viewed"])) {
                             echo "<form action=\"\" method=\"POST\"><input type=\"hidden\" name=\"del-file\" value=\"$readname\"><input type=\"submit\" class=\"button-danger\" name=\"action\" value=\"delete\"></form>";

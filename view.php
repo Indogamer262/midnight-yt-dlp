@@ -146,7 +146,7 @@
                         
                         if($ext == "mp4" || $ext == "webm") {
                             echo "<video class=\"video-preview\" width=\"80%\" controls>
-                              <source src=\"downloads/$filename\" type=\"video/$ext\">
+                              <source src=\"downloads/" . rawurlencode($filename) . "\" type=\"video/$ext\">
                               Browser issue playback.
                             </video>";
                         }
@@ -158,7 +158,7 @@
                                 $atype = "aac";
                             }
                             echo "<audio controls>
-                                <source src=\"downloads/$filename\" type=\"audio/$atype\">
+                                <source src=\"downloads/" . rawurlencode($filename). "\" type=\"audio/$atype\">
                                 Browser issue playback.
                             </audio>";
                         }
@@ -167,7 +167,7 @@
                         }
                         
                         array_push($_SESSION["ytdl_viewed"], $filename);
-                        echo "<br><a class=\"button-normal\" href=\"downloads/$filename\" download>Download</a>";
+                        echo "<br><a class=\"button-normal\" href=\"downloads/" . rawurlencode($filename) . "\" download>Download</a>";
                     }
                     else {
                         echo '<div class="notice-box">File don\'t exist</div>';
