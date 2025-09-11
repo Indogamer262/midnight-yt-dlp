@@ -150,7 +150,7 @@
                               Browser issue playback.
                             </video>";
                         }
-                        else if($ext = "mkv") {
+                        else if($ext == "mkv") {
                             echo "<video class=\"video-preview\" width=\"80%\" controls>
                               <source src=\"downloads/" . rawurlencode($filename) . "\" type=\"video/webm\">
                               Browser issue playback.
